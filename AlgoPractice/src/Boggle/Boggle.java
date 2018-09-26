@@ -9,7 +9,7 @@ public class Boggle {
 	int wordCount;
 	ArrayList<String> words;
 	
-	char board[][][];
+	String board[][];
 	int boardCount;
 	
 	public ArrayList<ArrayList<String>> result_words;
@@ -40,7 +40,7 @@ public class Boggle {
 	public void readBoard() {
 		boardCount = scan.nextInt();
 		result_words = new ArrayList<>();
-		board = new char[boardCount][4][4];
+		board = new String[boardCount][4];
 		
 		for(int b=0; b < boardCount ; b++) {
 			for(int i = 0; i < 4 ; i++) {
@@ -48,64 +48,51 @@ public class Boggle {
 				if(line.equals("")) {
 					line = scan.nextLine();
 				}
-				for(int j=0; j < 4 ; j++) {
-					board[b][i][j] = line.charAt(j);
-				}
+				board[b][i] = line;
+				
 			}
 			result_words.add(new ArrayList<String>());
 		}
 	}
 	
-	public void findNextLetter(int boardnum, String targetword, String finded, int x, int y) {
-//		System.out.println(targetword);
-//		System.out.println(finded);
-		if(targetword.equals(finded)) {
-			
-			if(!result_words.get(boardnum).contains(finded)) {
-				result_words.get(boardnum).add(finded);
-			}
-			
-			
-			return;
+	public boolean findNextLetter(int boardnum, String targetword, int x, int y) {
+		//x y
+		if(x < 0 || y < 0 || x > 3 || y > 3) {
+			return false;
 		}
-		if(targetword.length() <= finded.length()) {
-			return;
+		if(!targetword.substring(0,1).equals(board[boardnum][y].substring(x,x+1))) {
+			return false;
 		}
-		else {
-			for(int i = 0; i< 8; i++) {
-				
-				int nx = x + nextX[i];
-				int ny = y + nextY[i];
-				
-				if(nx < 0 || ny < 0 || nx > 3 || ny > 3) {
-					continue;
-				}
-				
-				
-				if(board[boardnum][nx][ny] == targetword.charAt(finded.length())) {
-					finded = finded + board[boardnum][nx][ny];
-					findNextLetter(boardnum, targetword, finded, nx, ny);
-					finded = finded.substring(0, finded.length()-1);
-				}
+		if(targetword.length() == 1) {
+			return true;
+		}
+		
+		for(int i=0; i < 8 ; i++) {
+			int nX = x + nextX[i];
+			int nY = y + nextY[i];
+			
+			
+			if(findNextLetter(boardnum, targetword.substring(1),nX,nY) == true) {
+				return true;
 			}
 		}
+		
+		return false;
+
 	}
 	
 	public void findWord(int boardnum,String word) {
 		for(int i=0; i < 4; i++) {
 			for (int j = 0; j < 4 ; j++) {
-				String firststr = "" + board[boardnum][i][j];
-				if(word.substring(0, 1).equals(firststr)) {
-					int beforefindedCount = result_words.get(boardnum).size();
-					findNextLetter(boardnum, word, firststr, i, j);
-					int afterfindedCount = result_words.get(boardnum).size();
-					if(afterfindedCount > beforefindedCount) {
-						return;
+				if(findNextLetter(boardnum, word, i, j)==true) {
+					if(!result_words.contains(word)) {
+						result_words.get(boardnum).add(word);
 					}
+					
+					return;
 				}
 			}
 		}
-		
 	}
 	
 	public void findWords() {
@@ -122,7 +109,9 @@ public class Boggle {
 		}
 	}
 	
-	public static void main(String args[]) {
+	
+	
+	public static void Boggle(String args[]) {
 		Boggle test = new Boggle();
 		test.readWords();
 		test.readBoard();
@@ -139,7 +128,9 @@ public class Boggle {
 				
 				if(wordlength >= maxlength) {
 					maxlength = wordlength;
-					maxString = test.result_words.get(i).get(j);
+					if(maxString.compareTo(test.result_words.get(i).get(j)) > 0 ) {
+						maxString = test.result_words.get(i).get(j);
+					}
 				}
 				
 				if(wordlength == 3 || wordlength == 4) {
@@ -160,6 +151,6 @@ public class Boggle {
 			}
 			System.out.println(score + " " + maxString + " " + test.result_words.get(i).size());
 		}
-		
 	}
+	
 }
